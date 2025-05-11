@@ -1,0 +1,162 @@
+body {
+    background-color: #1e1e1e;
+    color: white;
+    font-family: monospace;
+    margin: 0;
+    cursor: text;
+    display: flex;
+    flex-direction: column;
+    height: 100vh; /* Full viewport height */
+}
+
+#menu-bar {
+    background-color: #333;
+    color: #00ff00;
+    font-weight: bold;
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #555;
+    flex-shrink: 0; /* Prevent shrinking */
+    margin-top: 1vh;
+    height: 3vh;
+    margin-bottom: 1vh;
+    margin-left: 1vw;
+    margin-right: 1vw;
+}
+
+#system-info {
+    margin-left: 1vw;
+}
+
+#time-info {
+    margin-right: 1vw;
+}
+
+#controls button {
+    margin: 0 4px;
+    background-color: #555;
+    color: white;
+    border: 1px solid #777;
+    padding: 2px 6px;
+    cursor: pointer;
+    font-family: monospace;
+}
+
+#terminal-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex-grow: 1; /* Take up remaining space */
+    overflow: hidden; /* Add scrollbars if necessary */
+    height: calc(100vh - 3vh - 1vh - 1vh); /* Subtract the height of the menu bar and its margin */
+    margin-left: 1vw;
+    margin-right: 1vw;
+}
+
+.terminal-window {
+    flex: 1; /* Make the terminal take up available space */
+    display: flex;
+    flex-direction: column;
+    border: 3px solid #3a3a3a;
+    padding: 5px;
+    position: relative;
+    overflow: hidden;
+    min-width: 0; /* Prevent overflow issues */
+    min-height: 0; /* Prevent overflow issues */
+}
+
+.terminal-window.active {
+    outline: 2px solid #00ff00;
+}
+
+.terminal {
+    white-space: pre-wrap;
+}
+
+.prompt-line {
+    display: flex;
+}
+
+.prompt-line span {
+    white-space: pre;
+    color: #00ff00;
+    margin-right: 5px;
+}
+
+input.cmd-input {
+    background: transparent;
+    border: none;
+    color: white;
+    font-family: monospace;
+    outline: none;
+    flex: 1;
+}
+
+.output-line {
+    color: white;
+    white-space: pre-wrap;
+    padding-left: 10px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.close-btn {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background-color: red;
+    color: white;
+    font-size: 10px;
+    padding: 2px 5px;
+    border: none;
+    cursor: pointer;
+    z-index: 10; /* Ensure it appears above other elements */
+    display: block; /* Ensure it's always visible */
+}
+
+.terminal-menu {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: #333;
+    border-left: 1px solid #555;
+    padding: 5px;
+    gap: 5px;
+}
+
+.terminal-menu button {
+    background-color: #555;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 5px;
+}
+
+.resize-handle {
+    cursor: ew-resize;
+}
+
+.terminal-window {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    border: 3px solid #3a3a3a;
+    padding: 5px;
+    resize: both; /* Optional for manual resizing */
+    overflow: hidden;
+}
+
+.terminal-window.active {
+    outline: 2px solid #00ff00;
+}
+
+.terminal-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
