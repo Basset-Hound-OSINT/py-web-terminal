@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Web Terminal</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div id="menu-bar">
+        <div id="system-info">System: {{ system_info }}</div>
+        <div id="controls">
+            <button id="split-v">Split V</button>
+            <button id="split-h">Split H</button>
+        </div>
+        <div id="time-info"></div>
+    </div>
+    <div id="terminal-container">
+        <div class="terminal-window active">
+            <div class="terminal-menu">
+                <button class="resize-handle">↔</button>
+                <button class="close-btn">X</button>
+            </div>
+            <div class="terminal" id="terminal"></div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
