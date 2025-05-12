@@ -190,3 +190,236 @@ function adjustTerminalSizes() {
 
 // Add event listeners to the initial terminal
 addTerminalEventListeners(document.querySelector(".terminal-window"));
+
+// Aychpeak functionality
+const aychpeakOverlay = document.getElementById('aychpeak-overlay');
+const processTable = document.getElementById('process-tbody');
+const processSearch = document.getElementById('process-search');
+let refreshInterval;
+let allProcesses = []; // Store all processes for filtering
+
+// Open aychpeak overlay
+document.getElementById('aychpeak-btn').addEventListener('click', () => {
+    aychpeakOverlay.classList.remove('hidden');
+    fetchProcessData();
+    // Set up auto-refresh every 3 seconds
+    refreshInterval = setInterval(fetchProcessData, 3000);
+    // Focus the search input
+    setTimeout(() => processSearch.focus(), 100);
+});
+
+// Close aychpeak overlay
+document.getElementById('close-aychpeak').addEventListener('click', () => {
+    aychpeakOverlay.classList.add('hidden');
+    clearInterval(refreshInterval);
+    // Clear search on close
+    processSearch.value = '';
+});
+
+// Clear search button
+document.getElementById('clear-search').addEventListener('click', () => {
+    processSearch.value = '';
+    filterProcesses('');
+    processSearch.focus(); // Keep focus on the search input
+});
+
+// Process search functionality
+processSearch.addEventListener('input', () => {
+    const searchTerm = processSearch.value.toLowerCase();
+    filterProcesses(searchTerm);
+});
+
+// Filter processes based on search term
+function filterProcesses(searchTerm) {
+    if (!searchTerm) {
+        // If search is empty, display all processes
+        updateProcessTable(allProcesses);
+        return;
+    }
+    
+    // Filter processes that match the search term
+    const filteredProcesses = allProcesses.filter(process => {
+        // Search across all relevant fields
+        return (
+            process.pid.toString().includes(searchTerm) || 
+            process.user.toLowerCase().includes(searchTerm) || 
+            process.command.toLowerCase().includes(searchTerm) ||
+            process.cpu.toString().toLowerCase().includes(searchTerm) ||
+            process.mem.toString().toLowerCase().includes(searchTerm) ||
+            process.virt.toString().toLowerCase().includes(searchTerm) ||
+            process.res.toString().toLowerCase().includes(searchTerm) ||
+            process.shr.toString().toLowerCase().includes(searchTerm) ||
+            process.time.toLowerCase().includes(searchTerm) ||
+            process.pr.toString().toLowerCase().includes(searchTerm) ||
+            process.ni.toString().toLowerCase().includes(searchTerm) ||
+            process.s.toLowerCase().includes(searchTerm)
+        );
+    });
+    
+    updateProcessTable(filteredProcesses);
+}
+
+// Fetch process data from server
+function fetchProcessData() {
+    fetch('/get_processes')
+        .then(response => response.json())
+        .then(data => {
+            allProcesses = data.processes; // Store all processes
+            // Apply current filter if search box has content
+            const searchTerm = processSearch.value.toLowerCase();
+            if (searchTerm) {
+                filterProcesses(searchTerm);
+            } else {
+                updateProcessTable(allProcesses);
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching process data:', error);
+        });
+}
+
+// Update the process table with data
+function updateProcessTable(processes) {
+    // Clear the table body
+    processTable.innerHTML = '';
+    
+    if (processes.length === 0) {
+        // Show "No matching processes" message
+        const noResultsRow = document.createElement('tr');
+        const noResultsCell = document.createElement('td');
+        noResultsCell.colSpan = 12; // Span all columns
+        noResultsCell.textContent = 'No matching processes found';
+        noResultsCell.style.textAlign = 'center';
+        noResultsCell.style.padding = '20px';
+        noResultsRow.appendChild(noResultsCell);
+        processTable.appendChild(noResultsRow);
+        return;
+    }
+    
+    // Add each process to the table
+    processes.forEach(process => {
+        const row = document.createElement('tr');
+        
+        // Add all process data fields
+        addCell(row, process.pid, 'pid');
+        addCell(row, process.user);
+        addCell(row, process.pr);
+        addCell(row, process.ni);
+        addCell(row, process.virt);
+        addCell(row, process.res);
+        addCell(row, process.shr);
+        addCell(row, process.s);
+        
+        // Highlight high CPU usage
+        const cpuClass = parseFloat(process.cpu) > 10 ? 'cpu-high' : '';
+        addCell(row, process.cpu, cpuClass);
+        
+        // Highlight high memory usage
+        const memClass = parseFloat(process.mem) > 10 ? 'mem-high' : '';
+        addCell(row, process.mem, memClass);
+        
+        addCell(row, process.time);
+        addCell(row, process.command);
+        
+        processTable.appendChild(row);
+    });
+}
+
+// Helper function to add a cell to a table row
+function addCell(row, text, className = '') {
+    const cell = document.createElement('td');
+    cell.textContent = text;
+    if (className) {
+        cell.className = className;
+    }
+    row.appendChild(cell);
+}
+
+
+// Helper function to add a cell to a table row
+function addCell(row, text, className = '') {
+    const cell = document.createElement('td');
+    
+    // Add the text content
+    cell.textContent = text;
+    
+    // Add any specified class
+    if (className) {
+        cell.className = className;
+    }
+    
+    // If we have a search term, highlight matches
+    const searchTerm = processSearch.value.toLowerCase();
+    if (searchTerm && text && typeof text === 'string') {
+        const textLower = text.toLowerCase();
+        if (textLower.includes(searchTerm)) {
+            // Create highlighted version of the cell content
+            const highlightedText = createHighlightedText(text, searchTerm);
+            // Clear the cell and append the highlighted content
+            cell.textContent = '';
+            cell.appendChild(highlightedText);
+        }
+    }
+    
+    row.appendChild(cell);
+}
+
+// Helper function to create highlighted text with a search term
+function createHighlightedText(text, searchTerm) {
+    const fragment = document.createDocumentFragment();
+    const textLower = text.toLowerCase();
+    let lastIndex = 0;
+    
+    // Find all occurrences of the search term
+    let startIndex = textLower.indexOf(searchTerm);
+    while (startIndex !== -1) {
+        // Add text before match
+        if (startIndex > lastIndex) {
+            fragment.appendChild(document.createTextNode(
+                text.substring(lastIndex, startIndex)
+            ));
+        }
+        
+        // Add highlighted match
+        const highlight = document.createElement('span');
+        highlight.className = 'highlight';
+        highlight.style.backgroundColor = '#335533';
+        highlight.style.color = '#ffffff';
+        highlight.style.padding = '0 2px';
+        highlight.style.borderRadius = '2px';
+        highlight.textContent = text.substring(startIndex, startIndex + searchTerm.length);
+        fragment.appendChild(highlight);
+        
+        // Move to next position
+        lastIndex = startIndex + searchTerm.length;
+        startIndex = textLower.indexOf(searchTerm, lastIndex);
+    }
+    
+    // Add remaining text
+    if (lastIndex < text.length) {
+        fragment.appendChild(document.createTextNode(
+            text.substring(lastIndex)
+        ));
+    }
+    
+    return fragment;
+}
+
+// Add a small delay to prevent searching on every keystroke
+// Process search functionality with debounce
+let searchTimeout;
+processSearch.addEventListener('input', () => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        const searchTerm = processSearch.value.toLowerCase();
+        filterProcesses(searchTerm);
+    }, 150); // 150ms delay for better performance
+});
+
+// Clear search with escape key
+processSearch.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        processSearch.value = '';
+        filterProcesses('');
+    }
+});

@@ -11,6 +11,7 @@
         <div id="controls">
             <button id="split-v">Split V</button>
             <button id="split-h">Split H</button>
+            <button id="aychpeak-btn">AychPeak</button>
         </div>
         <div id="time-info"></div>
     </div>
@@ -23,6 +24,45 @@
             <div class="terminal" id="terminal"></div>
         </div>
     </div>
+    
+    <!-- Aychpeak Process Viewer Overlay -->
+    <div id="aychpeak-overlay" class="overlay hidden">
+        <div class="overlay-content">
+            <div class="overlay-header">
+                <h2>System Processes</h2>
+                <div class="search-container">
+                    <input type="text" id="process-search" placeholder="Search processes..." />
+                    <button id="clear-search" class="clear-search-btn" title="Clear search">✕</button>
+                    <div class="search-icon">🔍</div>
+                </div>
+                <button id="close-aychpeak" class="close-overlay-btn">X</button>
+            </div>
+            <div class="process-table-container">
+                <table id="process-table">
+                    <thead>
+                        <tr>
+                            <th>PID</th>
+                            <th>USER</th>
+                            <th>PR</th>
+                            <th>NI</th>
+                            <th>VIRT</th>
+                            <th>RES</th>
+                            <th>SHR</th>
+                            <th>S</th>
+                            <th>%CPU</th>
+                            <th>%MEM</th>
+                            <th>TIME+</th>
+                            <th>COMMAND</th>
+                        </tr>
+                    </thead>
+                    <tbody id="process-tbody">
+                        <!-- Process data will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>

@@ -65,6 +65,7 @@ body {
     overflow: hidden;
     min-width: 0; /* Prevent overflow issues */
     min-height: 0; /* Prevent overflow issues */
+    margin-bottom: 1vh;
 }
 
 .terminal-window.active {
@@ -159,4 +160,157 @@ input.cmd-input {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
+}
+
+/* Aychpeak Overlay Styles */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+.overlay.hidden {
+    display: none;
+}
+
+.overlay-content {
+    width: 90vw;
+    height: 90vh;
+    background-color: #1e1e1e;
+    border: 1px solid #00ff00;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.overlay-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: #333;
+    border-bottom: 1px solid #555;
+}
+
+.overlay-header h2 {
+    margin: 0;
+    color: #00ff00;
+    font-size: 18px;
+}
+
+.search-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex: 1;
+    margin: 0 20px;
+    max-width: 400px;
+}
+
+#process-search {
+    background-color: #1e1e1e;
+    border: 1px solid #00ff00;
+    color: white;
+    padding: 6px 10px;
+    padding-right: 30px;
+    font-family: monospace;
+    width: 100%;
+    border-radius: 4px;
+}
+
+#process-search:focus {
+    outline: none;
+    box-shadow: 0 0 3px #00ff00;
+}
+
+.search-icon {
+    position: absolute;
+    right: 10px;
+    color: #00ff00;
+    pointer-events: none;
+}
+
+.clear-search-btn {
+    position: absolute;
+    right: 30px;
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+}
+
+.clear-search-btn:hover {
+    color: #fff;
+    background-color: #555;
+}
+
+.close-overlay-btn {
+    background-color: red;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    padding: 3px 8px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.process-table-container {
+    overflow: auto;
+    flex: 1;
+    padding: 10px;
+}
+
+#process-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+#process-table th, #process-table td {
+    padding: 5px 10px;
+    text-align: left;
+    border-bottom: 1px solid #444;
+}
+
+#process-table th {
+    background-color: #333;
+    color: #00ff00;
+    position: sticky;
+    top: 0;
+}
+
+#process-table tr:nth-child(even) {
+    background-color: #2a2a2a;
+}
+
+#process-table tr:hover {
+    background-color: #444;
+}
+
+#process-table td.pid {
+    color: #00ff00;
+}
+
+#process-table td.cpu-high {
+    color: #ff5555;
+}
+
+#process-table td.mem-high {
+    color: #ffaa55;
 }
