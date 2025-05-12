@@ -4,6 +4,7 @@ import platform
 import subprocess
 import psutil
 import os
+import signal
 
 # Create a Blueprint named 'pywebshell'
 pywebshell = Blueprint("pywebshell", __name__, template_folder="templates")
@@ -115,6 +116,41 @@ def get_processes():
     
     # Limit to top 100 processes to avoid browser performance issues
     return jsonify({"processes": processes[:100]})
+
+@pywebshell.route("/cancel_processes", methods=["POST"])
+def cancel_processes():
+    """Endpoint to cancel/terminate selected processes"""
+    pids = request.json.get("pids", [])
+    
+    if not pids:
+        return jsonify({"success": False, "message": "No PIDs provided"})
+    
+    errors = []
+    
+    for pid in pids:
+        try:
+            # Try to terminate the process gracefully first (SIGTERM)
+            proc = psutil.Process(pid)
+            proc.terminate()
+            
+            # Wait briefly to see if it terminates
+            gone, still_alive = psutil.wait_procs([proc], timeout=1)
+            
+            # If still alive, force kill (SIGKILL)
+            if still_alive:
+                proc.kill()
+        except psutil.NoSuchProcess:
+            errors.append({"pid": pid, "error": "Process not found"})
+        except psutil.AccessDenied:
+            errors.append({"pid": pid, "error": "Permission denied"})
+        except Exception as e:
+            errors.append({"pid": pid, "error": str(e)})
+    
+    return jsonify({
+        "success": True,
+        "errors": errors,
+        "message": f"Processed {len(pids)} PIDs with {len(errors)} errors"
+    })
 
 def format_bytes(bytes_value):
     """Format bytes to human-readable format"""

@@ -1,7 +1,6 @@
 // This is the updated script.js with fixes for:
 // 1. Clearing the terminal when "clear" command is entered
 // 2. Enabling text selection, copy/paste functionality in both terminal and AychPeak overlay
-// 3. Added process selection and cancellation functionality
 
 let terminal = document.getElementById("terminal");
 let timeInfo = document.getElementById("time-info");
@@ -222,7 +221,6 @@ const processTable = document.getElementById('process-tbody');
 const processSearch = document.getElementById('process-search');
 let refreshInterval;
 let allProcesses = []; // Store all processes for filtering
-let selectedProcesses = new Set(); // Store selected process IDs
 
 // Open aychpeak overlay
 document.getElementById('aychpeak-btn').addEventListener('click', () => {
@@ -238,10 +236,8 @@ document.getElementById('aychpeak-btn').addEventListener('click', () => {
 document.getElementById('close-aychpeak').addEventListener('click', () => {
     aychpeakOverlay.classList.add('hidden');
     clearInterval(refreshInterval);
-    // Clear search and selected processes on close
+    // Clear search on close
     processSearch.value = '';
-    selectedProcesses.clear();
-    updateCancelButtonState();
 });
 
 // Clear search button
@@ -251,166 +247,11 @@ document.getElementById('clear-search').addEventListener('click', () => {
     processSearch.focus(); // Keep focus on the search input
 });
 
-// Process search functionality with debounce
-let searchTimeout;
+// Process search functionality
 processSearch.addEventListener('input', () => {
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(() => {
-        const searchTerm = processSearch.value.toLowerCase();
-        filterProcesses(searchTerm);
-    }, 150); // 150ms delay for better performance
+    const searchTerm = processSearch.value.toLowerCase();
+    filterProcesses(searchTerm);
 });
-
-// Clear search with escape key
-processSearch.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-        processSearch.value = '';
-        filterProcesses('');
-    }
-});
-
-// Cancel selected processes button
-document.getElementById('cancel-selected').addEventListener('click', () => {
-    if (selectedProcesses.size === 0) {
-        showNotification('No processes selected', 'warning');
-        return;
-    }
-    
-    cancelSelectedProcesses();
-});
-
-// Cancel selected processes
-function cancelSelectedProcesses() {
-    const pidsToCancel = Array.from(selectedProcesses);
-    if (pidsToCancel.length === 0) return;
-    
-    // Show loading indicator
-    const cancelBtn = document.getElementById('cancel-selected');
-    const originalText = cancelBtn.textContent;
-    cancelBtn.textContent = 'Canceling...';
-    cancelBtn.disabled = true;
-    
-    // Send request to cancel processes
-    fetch('/cancel_processes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pids: pidsToCancel })
-    })
-    .then(response => response.json())
-    .then(data => {
-        // Reset button state
-        cancelBtn.textContent = originalText;
-        cancelBtn.disabled = false;
-        
-        // Handle response
-        if (data.success) {
-            if (data.errors.length === 0) {
-                showNotification('All selected processes canceled successfully', 'success');
-            } else {
-                // Show error popup with details
-                showErrorPopup(data.errors);
-            }
-            
-            // Clear selections and refresh process list
-            selectedProcesses.clear();
-            updateCancelButtonState();
-            fetchProcessData();
-        } else {
-            showNotification('Failed to cancel processes', 'error');
-        }
-    })
-    .catch(error => {
-        console.error('Error canceling processes:', error);
-        cancelBtn.textContent = originalText;
-        cancelBtn.disabled = false;
-        showNotification('Error: Could not communicate with server', 'error');
-    });
-}
-
-// Show notification message
-function showNotification(message, type) {
-    const notification = document.createElement('div');
-    notification.className = `notification ${type}`;
-    notification.textContent = message;
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-        notification.classList.add('show');
-        
-        // Remove the notification after a delay
-        setTimeout(() => {
-            notification.classList.remove('show');
-            setTimeout(() => notification.remove(), 300);
-        }, 2500);
-    }, 10);
-}
-
-// Show error popup for failed process cancellations
-function showErrorPopup(errors) {
-    // Create overlay backdrop
-    const backdrop = document.createElement('div');
-    backdrop.className = 'popup-backdrop';
-    
-    // Create popup container
-    const popup = document.createElement('div');
-    popup.className = 'error-popup';
-    
-    // Create popup header
-    const header = document.createElement('div');
-    header.className = 'popup-header';
-    header.innerHTML = `
-        <h3>Process Cancellation Report</h3>
-        <button class="popup-close-btn">✕</button>
-    `;
-    
-    // Create popup content
-    const content = document.createElement('div');
-    content.className = 'popup-content';
-    
-    // Add error details
-    const errorList = document.createElement('div');
-    errorList.className = 'error-list';
-    
-    errors.forEach(err => {
-        const errorItem = document.createElement('div');
-        errorItem.className = 'error-item';
-        errorItem.innerHTML = `<strong>PID ${err.pid}:</strong> ${err.error}`;
-        errorList.appendChild(errorItem);
-    });
-    
-    content.appendChild(errorList);
-    
-    // Add close button at bottom
-    const footer = document.createElement('div');
-    footer.className = 'popup-footer';
-    const closeBtn = document.createElement('button');
-    closeBtn.textContent = 'Close';
-    closeBtn.className = 'popup-button';
-    footer.appendChild(closeBtn);
-    
-    // Assemble popup
-    popup.appendChild(header);
-    popup.appendChild(content);
-    popup.appendChild(footer);
-    backdrop.appendChild(popup);
-    document.body.appendChild(backdrop);
-    
-    // Add event listeners to close buttons
-    const closeButtons = [
-        header.querySelector('.popup-close-btn'),
-        closeBtn
-    ];
-    
-    closeButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            backdrop.classList.add('fading');
-            setTimeout(() => backdrop.remove(), 300);
-        });
-    });
-    
-    // Let the popup fade in
-    setTimeout(() => backdrop.classList.add('visible'), 10);
-}
 
 // Filter processes based on search term
 function filterProcesses(searchTerm) {
@@ -470,7 +311,7 @@ function updateProcessTable(processes) {
         // Show "No matching processes" message
         const noResultsRow = document.createElement('tr');
         const noResultsCell = document.createElement('td');
-        noResultsCell.colSpan = 13; // Span all columns (added checkbox column)
+        noResultsCell.colSpan = 12; // Span all columns
         noResultsCell.textContent = 'No matching processes found';
         noResultsCell.style.textAlign = 'center';
         noResultsCell.style.padding = '20px';
@@ -486,31 +327,6 @@ function updateProcessTable(processes) {
         const row = document.createElement('tr');
         // Make row selectable
         row.style.userSelect = "text";
-        
-        // Add checkbox column first
-        const checkboxCell = document.createElement('td');
-        checkboxCell.className = 'checkbox-cell';
-        
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.className = 'process-checkbox';
-        checkbox.dataset.pid = process.pid;
-        checkbox.checked = selectedProcesses.has(process.pid);
-        
-        checkbox.addEventListener('change', (e) => {
-            e.stopPropagation(); // Prevent row click from toggling checkbox
-            
-            if (checkbox.checked) {
-                selectedProcesses.add(process.pid);
-            } else {
-                selectedProcesses.delete(process.pid);
-            }
-            
-            updateCancelButtonState();
-        });
-        
-        checkboxCell.appendChild(checkbox);
-        row.appendChild(checkboxCell);
         
         // Add all process data fields
         addCell(row, process.pid, 'pid');
@@ -533,33 +349,8 @@ function updateProcessTable(processes) {
         addCell(row, process.time);
         addCell(row, process.command);
         
-        // Add click event to toggle checkbox when row is clicked
-        row.addEventListener('click', (e) => {
-            // Only toggle if the click wasn't on the checkbox itself
-            if (e.target !== checkbox) {
-                checkbox.checked = !checkbox.checked;
-                
-                // Trigger the change event
-                const changeEvent = new Event('change');
-                checkbox.dispatchEvent(changeEvent);
-            }
-        });
-        
         processTable.appendChild(row);
     });
-}
-
-// Update cancel button state based on selections
-function updateCancelButtonState() {
-    const cancelBtn = document.getElementById('cancel-selected');
-    
-    if (selectedProcesses.size > 0) {
-        cancelBtn.disabled = false;
-        cancelBtn.textContent = `Cancel Selected (${selectedProcesses.size})`;
-    } else {
-        cancelBtn.disabled = true;
-        cancelBtn.textContent = 'Cancel Selected';
-    }
 }
 
 // Helper function to add a cell to a table row
@@ -636,25 +427,23 @@ function createHighlightedText(text, searchTerm) {
     return fragment;
 }
 
-// Select all processes checkbox functionality
-document.getElementById('select-all').addEventListener('change', (e) => {
-    const isChecked = e.target.checked;
-    
-    // Get all visible process checkboxes
-    const checkboxes = document.querySelectorAll('#process-tbody .process-checkbox');
-    
-    checkboxes.forEach(checkbox => {
-        checkbox.checked = isChecked;
-        
-        const pid = parseInt(checkbox.dataset.pid);
-        if (isChecked) {
-            selectedProcesses.add(pid);
-        } else {
-            selectedProcesses.delete(pid);
-        }
-    });
-    
-    updateCancelButtonState();
+// Add a small delay to prevent searching on every keystroke
+// Process search functionality with debounce
+let searchTimeout;
+processSearch.addEventListener('input', () => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        const searchTerm = processSearch.value.toLowerCase();
+        filterProcesses(searchTerm);
+    }, 150); // 150ms delay for better performance
+});
+
+// Clear search with escape key
+processSearch.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        processSearch.value = '';
+        filterProcesses('');
+    }
 });
 
 // Make sure all copy/paste operations work correctly

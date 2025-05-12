@@ -35,12 +35,16 @@
                     <button id="clear-search" class="clear-search-btn" title="Clear search">✕</button>
                     <div class="search-icon">🔍</div>
                 </div>
+                <button id="cancel-selected" class="cancel-selected-btn" disabled>Cancel Selected</button>
                 <button id="close-aychpeak" class="close-overlay-btn">X</button>
             </div>
             <div class="process-table-container">
                 <table id="process-table">
                     <thead>
                         <tr>
+                            <th class="checkbox-header">
+                                <input type="checkbox" id="select-all" title="Select all visible processes">
+                            </th>
                             <th>PID</th>
                             <th>USER</th>
                             <th>PR</th>

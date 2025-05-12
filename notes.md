@@ -1,0 +1,1 @@
+i want to enable the functionality to transverse directories. currently i am stuck in the ubuntu directory, even though i cd to a different directory. I want "cd", "cd ..", and "cd /some/folder/somewhere/" to work. I also would like tab-autocompletion of names.

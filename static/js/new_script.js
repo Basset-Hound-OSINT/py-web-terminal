@@ -251,22 +251,10 @@ document.getElementById('clear-search').addEventListener('click', () => {
     processSearch.focus(); // Keep focus on the search input
 });
 
-// Process search functionality with debounce
-let searchTimeout;
+// Process search functionality
 processSearch.addEventListener('input', () => {
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(() => {
-        const searchTerm = processSearch.value.toLowerCase();
-        filterProcesses(searchTerm);
-    }, 150); // 150ms delay for better performance
-});
-
-// Clear search with escape key
-processSearch.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-        processSearch.value = '';
-        filterProcesses('');
-    }
+    const searchTerm = processSearch.value.toLowerCase();
+    filterProcesses(searchTerm);
 });
 
 // Cancel selected processes button
@@ -635,6 +623,25 @@ function createHighlightedText(text, searchTerm) {
     
     return fragment;
 }
+
+// Add a small delay to prevent searching on every keystroke
+// Process search functionality with debounce
+let searchTimeout;
+processSearch.addEventListener('input', () => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        const searchTerm = processSearch.value.toLowerCase();
+        filterProcesses(searchTerm);
+    }, 150); // 150ms delay for better performance
+});
+
+// Clear search with escape key
+processSearch.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        processSearch.value = '';
+        filterProcesses('');
+    }
+});
 
 // Select all processes checkbox functionality
 document.getElementById('select-all').addEventListener('change', (e) => {
